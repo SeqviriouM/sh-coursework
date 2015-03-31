@@ -1,0 +1,15 @@
+/* CSS declarations go here */
+
+.output {
+  white-space: pre;
+  display: block;
+  unicode-bidi: embed;
+  font-family: Menlo;
+  font-size: 13px;
+}
+
+.output p {
+  margin-bottom: 10px;
+  border-bottom: 2px dashed #eee;
+  padding: 0 10px 10px 10px;
+}
