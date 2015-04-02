@@ -157,20 +157,55 @@ function compute(tree) {
 }
 
 function getThreads(tree) {
-  var vertexes = [];
+  var threads = [];
 
   for (var item in tree) {
-    output(tree[item]);
     if (tree[item].start === true) {
-        vertexes.push(tree[item]);
+        //vertexes.push(item);
+        var help_threads = [];
+        help_threads[0] = {
+            top: item,
+            way: new Array(item)
+        }
+        help_threads = addThread(help_threads, tree);
+        threads = threads.concat(help_threads);
     }
   }
 
-  output(vertexes);
+  output('Ways: ');
+  for (var thread in threads) {
+    output(threads[thread].way);
+  }
 }
 
-function addThread() {
+function addThread(threads, tree) {
+    var changed = false;
+    var threads_length = threads.length; 
+    for (var i = 0; i < threads_length; i++) {
+        if (Object.keys(tree[threads[i].top].directions).length !== 0) {
+            changed = true;
+            if (Object.keys(tree[threads[i].top].directions).length > 1) {                
+                threads[i].way.push(Object.keys(tree[threads[i].top].directions)[0]);
+                for (var k = 1; k < Object.keys(tree[threads[i].top].directions).length; k++) {
+                    //var help_thread = threads.slice(i,1);
+                    var copied_thread = jQuery.extend(true, {}, threads[i]);
+                    copied_thread.top = Object.keys(tree[threads[i].top].directions)[k];
+                    copied_thread.way[copied_thread.way.length - 1] = Object.keys(tree[threads[i].top].directions)[k];
+                    threads.push(copied_thread);
+                }
+                threads[i].top = Object.keys(tree[threads[i].top].directions)[0];
+            } else if (Object.keys(tree[threads[i].top].directions).length === 1) {
+                threads[i].way.push(Object.keys(tree[threads[i].top].directions)[0]);
+                threads[i].top = Object.keys(tree[threads[i].top].directions)[0];
+            }
+        }
+    }
 
+    if (changed) {
+        return addThread(threads, tree);
+    } else {
+        return threads;
+    }
 }
 
 function calculate(tree) {
@@ -187,129 +222,190 @@ $(function () {
         1: {
             value: 4,
             start: true,
-            4: '5+',
-            5: '4+',
-            6: '2+',
-            7: '7+'
+            directions: {
+                4: '5+',
+                5: '4+',
+                6: '2+',
+                7: '7+'
+            },
         },
         2: {
             value: 5,
             start: true,
-            7: '7&',
-            9: '3&'
+            directions: {
+                7: '7&',
+                9: '3&'
+            }
         },
         3: {
             value: 8,
             start: true,
-            9: '3&'
+            directions: {
+                9: '3&'
+            }            
         },
         4: {
             value: 5,
-            11: '2+'
+            directions: {
+                11: '2+'
+            }
         },
         5: {
             value: 6,
-            11: '4+'
+            directions: {
+                11: '4+'
+            }
         },
         6: {
             value: 6,
-            11: '3&',
-            12: '2+'
+            directions: {
+                11: '3&',
+                12: '2+'
+            }            
         },
         7: {
             value: 1,
-            12: '1+'
+            directions: {
+                12: '1+'
+            }
         }, 
         8: {
             value: 2,
             start: true,
-            13: '2&'
+            directions: {
+                13: '2&'    
+            }
         },
         9: {
             value: 3,
-            13: '3&'
+            directions: {
+                13: '3&'
+            }
         },
         10: {
             value: 4,
             start: true,
-            14: 2
+            directions: {
+                14: 2
+            }            
         },
         11: {
             value: 4,
-            15: '1&',
-            16: '3&'
+            directions: {
+                15: '1&',
+                16: '3&'
+            }            
         },
         12: {
             value: 5,
-            17: 2
+            directions: {
+                17: 2
+            }
         },
         13: {
             value: 4,
-            18: 4
+            directions: {
+                18: 4
+            },
         },
         14: {
             value: 3,
-            19: '3&',
-            20: '2&'
+            directions: {
+                19: '3&',
+                20: '2&'
+            }
         },
         15: {
             value: 6,
-            21: '3+',
-            22: '4+',
-            23: '5+'
+            directions: {
+                21: '3+',
+                22: '4+',
+                23: '5+'
+            }            
         },
         16: {
-            value: 7
+            value: 7,
+            directions: {
+            }
         },
         17: {
-            value: 3
+            value: 3,
+            directions: {
+            }
         },
         18: {
-            value: 2
+            value: 2,
+            directions: {
+            }
         },
         19: {
             value: 1,
-            24: '3&',
-            25: '5&',
-            26: '1&'
+            directions: {
+                24: '3&',
+                25: '5&',
+                26: '1&'
+            }
         },
         20: {
-            value: 2
+            value: 2,
+            directions: {
+            }
         },
         21: {
             value: 3,
-            27: '3&',
-            28: '1&'
+            directions: {
+                27: '3&',
+                28: '1&'
+            }            
         },
         22: {
-            value: 4
+            value: 4,
+            directions: {
+            }
         },
         23: {
             value: 5,
-            29: '3+',
-            30: '4+'
+            directions: {
+                29: '3+',
+                30: '4+'
+            }            
         },
         24: {
             value: 5,
-            30: '5+'
+            directions: {
+                30: '5+'
+            }
         },
         25: {
-            value: 2
+            value: 2,
+            directions: {
+            }
         },
         26: {
-            value: 3
+            value: 3,
+            directions: {
+            }
         },
         27: {
-            value: 6
+            value: 6,
+            directions: {
+            }
         },
         28: {
-            value: 5
+            value: 5,
+            directions: {
+
+            }
         },
         29: {
-            value: 4
+            value: 4,
+            directions: {
+            }
         },
         30: {
-            value: 3
+            value: 3,
+            directions: {
+            }
         }
     }
 
