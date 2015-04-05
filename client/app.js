@@ -228,6 +228,8 @@ function getThreads(tree) {
     for (var thread in threads) {
         output(threads[thread].way);
     }
+
+    return threads;
 }
 
 function addThread(thread, tree) {
@@ -238,12 +240,12 @@ function addThread(thread, tree) {
             for (var dir in tree[thread.top].directions) {
                 if (parseInt(tree[thread.top].directions[dir]) > max_dir_value && !tree[dir].deleted) {
                     max_dir_value = parseInt(tree[thread.top].directions[dir]);
-                    max_dir = parseInt(dir);
+                    max_dir = dir;
                 }
             }
             if (max_dir) {
                 for (var dir in tree[thread.top].directions) {
-                    if (dir != parseInt(max_dir)) {
+                    if (dir !== parseInt(max_dir)) {
                         tree[dir].value += parseInt(tree[thread.top].directions[dir]);
                     }
                 }
@@ -274,8 +276,39 @@ function addThread(thread, tree) {
 }
 
 function calculate(tree) {
+    /*
+    Get all paths
+    */
     //getAllPaths(tree);
-    getThreads(tree);
+    
+    /*
+    Get threads
+    */
+    var threads = getThreads(tree);  
+
+    /*
+    Расчет матрицы следования
+    */
+
+    var matr = [];
+
+    Object.keys(tree).forEach(function(currentValue, index, arr) {
+        var current = tree[currentValue],
+            row = [];
+
+        arr.forEach(function(item) {
+            row.push(current.directions[item] ? current.directions[item] : 0);
+        });
+        matr.push(row);
+    });
+
+    matr = _.zip.apply(_, matr);
+
+    printMatr(matr, "Матрица следования: ");
+
+    matr = _.zip.apply(_, matr);
+
+
 }
 
 
