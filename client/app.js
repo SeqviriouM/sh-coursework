@@ -156,59 +156,125 @@ function compute(tree) {
 
 }
 
-function getThreads(tree) {
-  var threads = [];
+function getAllPaths(tree) {
+  var paths = [];
 
   for (var item in tree) {
     if (tree[item].start === true) {
-        //vertexes.push(item);
-        var help_threads = [];
-        help_threads[0] = {
+        var current_vertex_paths = [];
+        current_vertex_paths[0] = {
             top: item,
             way: new Array(item)
         }
-        help_threads = addThread(help_threads, tree);
-        threads = threads.concat(help_threads);
+        current_vertex_paths = addPath(current_vertex_paths, tree);
+        paths = paths.concat(current_vertex_paths);
     }
   }
 
   output('Ways: ');
-  for (var thread in threads) {
-    output(threads[thread].way);
+  for (var path in paths) {
+    output(paths[path].way);
   }
 }
 
-function addThread(threads, tree) {
+function addPath(paths, tree) {
     var changed = false;
-    var threads_length = threads.length; 
-    for (var i = 0; i < threads_length; i++) {
-        if (Object.keys(tree[threads[i].top].directions).length !== 0) {
+    var paths_length = paths.length; 
+    for (var i = 0; i < paths_length; i++) {
+        if (Object.keys(tree[paths[i].top].directions).length !== 0) {
             changed = true;
-            if (Object.keys(tree[threads[i].top].directions).length > 1) {                
-                threads[i].way.push(Object.keys(tree[threads[i].top].directions)[0]);
-                for (var k = 1; k < Object.keys(tree[threads[i].top].directions).length; k++) {
-                    //var help_thread = threads.slice(i,1);
-                    var copied_thread = jQuery.extend(true, {}, threads[i]);
-                    copied_thread.top = Object.keys(tree[threads[i].top].directions)[k];
-                    copied_thread.way[copied_thread.way.length - 1] = Object.keys(tree[threads[i].top].directions)[k];
-                    threads.push(copied_thread);
+            if (Object.keys(tree[paths[i].top].directions).length > 1) {                
+                paths[i].way.push(Object.keys(tree[paths[i].top].directions)[0]);
+                for (var k = 1; k < Object.keys(tree[paths[i].top].directions).length; k++) {
+                    var copied_path = jQuery.extend(true, {}, paths[i]);
+                    copied_path.top = Object.keys(tree[paths[i].top].directions)[k];
+                    copied_path.way[copied_path.way.length - 1] = Object.keys(tree[paths[i].top].directions)[k];
+                    paths.push(copied_path);
                 }
-                threads[i].top = Object.keys(tree[threads[i].top].directions)[0];
-            } else if (Object.keys(tree[threads[i].top].directions).length === 1) {
-                threads[i].way.push(Object.keys(tree[threads[i].top].directions)[0]);
-                threads[i].top = Object.keys(tree[threads[i].top].directions)[0];
+                paths[i].top = Object.keys(tree[paths[i].top].directions)[0];
+            } else if (Object.keys(tree[paths[i].top].directions).length === 1) {
+                paths[i].way.push(Object.keys(tree[paths[i].top].directions)[0]);
+                paths[i].top = Object.keys(tree[paths[i].top].directions)[0];
             }
         }
     }
 
     if (changed) {
-        return addThread(threads, tree);
+        return addPath(paths, tree);
     } else {
-        return threads;
+        return paths;
     }
 }
 
+function getThreads(tree) {
+    var copied_tree = $.extend(true, {}, tree),
+        threads = [],
+        end = false;
+
+    while (!end) {
+        end = true;
+        for (var item in copied_tree) {
+            if (!copied_tree[item].deleted) {
+                end = false;
+                var help_thread = {top: item, way: new Array(item), value: copied_tree[item].value};
+                help_thread = addThread(help_thread, copied_tree);
+                threads.push(help_thread);
+                break;
+            }
+        }
+    }
+
+    output('Threads: ');
+    for (var thread in threads) {
+        output(threads[thread].way);
+    }
+}
+
+function addThread(thread, tree) {
+     if (Object.keys(tree[thread.top].directions).length !== 0) {
+        if (Object.keys(tree[thread.top].directions).length > 1) {
+            var max_dir_value = 0,
+                max_dir;
+            for (var dir in tree[thread.top].directions) {
+                if (parseInt(tree[thread.top].directions[dir]) > max_dir_value && !tree[dir].deleted) {
+                    max_dir_value = parseInt(tree[thread.top].directions[dir]);
+                    max_dir = parseInt(dir);
+                }
+            }
+            if (max_dir) {
+                for (var dir in tree[thread.top].directions) {
+                    if (dir != parseInt(max_dir)) {
+                        tree[dir].value += parseInt(tree[thread.top].directions[dir]);
+                    }
+                }
+                tree[thread.top].deleted = true;
+                thread.way.push(max_dir);
+                thread.top = max_dir;    
+            } else {
+                tree[thread.top].deleted = true;
+                return thread;
+            }
+            
+        } else if (Object.keys(tree[thread.top].directions).length === 1) {
+            if (!tree[Object.keys(tree[thread.top].directions)[0]].deleted) {
+                tree[thread.top].deleted = true;
+                thread.way.push(Object.keys(tree[thread.top].directions)[0]);
+                thread.top = Object.keys(tree[thread.top].directions)[0];
+            } else {
+                tree[thread.top].deleted = true;
+                return thread;
+            }   
+        }
+        return addThread(thread, tree);
+
+     } else {
+        tree[thread.top].deleted = true;
+        return thread;
+     }
+}
+
 function calculate(tree) {
+    //getAllPaths(tree);
     getThreads(tree);
 }
 
