@@ -1,3 +1,17 @@
+graph = new ReactiveDict;
+graph.set('threads', []);
+
+Template.curse_work.helpers({
+    threads: function () {
+        return graph.get('threads');
+    }
+})
+
+// Template.curse_work.created = function () {
+//     this.state = new ReactiveDict
+// }
+
+
 function pretty(input) {
     return JSON.stringify(input, null, '\t');
 }
@@ -6,8 +20,12 @@ function pp(input) {
     console.log(pretty(input));
 }
 
-function output(input) {
-    $('.output').append('<p>' + input + '</p>');
+function output(input, output) {
+    if (output) {
+        $(output).append('<div>' + input + '</div>');   
+    } else {
+        $('.output').append('<div>' + input + '</div>');   
+    }
 }
 
 function copy(input) {
@@ -224,10 +242,11 @@ function getThreads(tree) {
         }
     }
 
-    output('Threads: ');
-    for (var thread in threads) {
-        output(threads[thread].way);
-    }
+    //output('Threads: ', '#threads');
+    
+        // for (var thread in threads) {
+        //     output(threads[thread].way, '#threads');
+        // }
 
     return threads;
 }
@@ -275,7 +294,59 @@ function addThread(thread, tree) {
      }
 }
 
+function drawGraph(tree) {
+    var container = $('#graph'),
+        nodes = [],
+        edges = [];
+
+    for (var i in tree) {
+        nodes.push( { data: { id: 'a' + i } } );
+        for (var j in tree[i].directions) {
+            edges.push( { data: { id: i+j, source: 'a' + i, target: 'a' + j } } );    
+        }
+    }
+
+    var elements = {nodes: nodes, edges: edges};
+
+    var cy = cytoscape({
+        container: document.getElementById('graph'),
+        style: cytoscape.stylesheet()
+        .selector('node')
+          .css({
+            'content': 'data(id)'
+          })
+        .selector('edge')
+          .css({
+            'target-arrow-shape': 'triangle',
+            'width': 4,
+            'line-color': '#ddd',
+            'target-arrow-color': '#ddd'
+          })
+        .selector('.highlighted')
+          .css({
+            'background-color': '#61bffc',
+            'line-color': '#61bffc',
+            'target-arrow-color': '#61bffc',
+            'transition-property': 'background-color, line-color, target-arrow-color',
+            'transition-duration': '0.5s'
+          }),
+        elements: elements,
+        layout: {
+            name: 'breadthfirst',
+            directed: true,
+            padding: 10
+        }
+    });
+
+    //var network = new vis.Network(container, data, {});
+}
+
 function calculate(tree) {
+    /*
+    Draw graph
+    */
+    drawGraph(tree);
+
     /*
     Get all paths
     */
@@ -284,7 +355,11 @@ function calculate(tree) {
     /*
     Get threads
     */
-    var threads = getThreads(tree);  
+    var threads = getThreads(tree); 
+
+    graph.set('threads', threads);
+
+    //Template.curse_work.__helpers.set('threads', threads);
 
     /*
     Расчет матрицы следования
@@ -313,8 +388,6 @@ function calculate(tree) {
 
 
 
-
-
 $(function () {
 
     var tree = {
@@ -333,7 +406,8 @@ $(function () {
             start: true,
             directions: {
                 7: '7&',
-                9: '3&'
+                9: '3&',
+                1: '2'
             }
         },
         3: {
@@ -508,7 +582,55 @@ $(function () {
         }
     }
 
+    var new_tree = {
+        1: {
+            value: 4,
+            start: true,
+            directions: {
+                4: '5+',
+                5: '4+',
+                6: '2+',
+                7: '7+'
+            },
+        },
+        2: {
+            value: 5,
+            start: true,
+            directions: {
+                7: '7&'
+            }
+        },
+        3: {
+            value: 8,
+            start: true,
+            directions: {
+            }            
+        },
+        4: {
+            value: 5,
+            directions: {
+            }
+        },
+        5: {
+            value: 6,
+            directions: {
+            }
+        },
+        6: {
+            value: 6,
+            directions: {
+            }            
+        },
+        7: {
+            value: 1,
+            directions: {
+            }
+        }
+    }
+
     calculate(tree);
+
+    //calculate(tree);
     //compute(tree);
 
 });
