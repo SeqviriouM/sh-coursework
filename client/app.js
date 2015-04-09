@@ -33,37 +33,39 @@ function copy(input) {
 }
 
 function printMatr(input, title) {
-    var result = '<h3 class="title">' + title + '</h3>       ',
+    var result = '<h3 class="title">' + title + '</h3><table class="table table-hover"><tbody><tr><td></td>',
         N = input.length;
 
     for (var i = 1; i <= N; i++) {
-        result += '<span style="color:#999;display:inline-block;transform:rotate(-45deg);padding-bottom:4px">' + i + '</span>          ';
-        if (i < 10) {
-            result += '  ';
-        }
+        result += '<td><span style="color:#999;display:inline-block;transform:rotate(-45deg);padding-bottom:4px">' + i + '</span></td>';
+        // if (i < 10) {
+        //     result += '  ';
+        // }
     }
 
-    result += '<br>'
+    result += '</tr>'
 
     input.forEach(function (row, i) {
-        result += '<span style="color:#999">' + (i+1) + '</span>   ';
+        result += '<tr><td><span style="color:#999">' + (i+1) + '</span></td>   ';
         if (i < 9) {
             result += '  ';
         }
         row.forEach(function (el) {
-            result += el + '   ';
-            if (el < 10) {
-                result += '         ';
-            } 
-            if (el.length == 2) {
-                result += '       ';
-            }
-            if (el.length == 3) {
-                result += '      ';
-            }
+            result += '<td>' + el + '</td>';
+            // if (el < 10) {
+            //     result += '         ';
+            // } 
+            // if (el.length == 2) {
+            //     result += '       ';
+            // }
+            // if (el.length == 3) {
+            //     result += '      ';
+            // }
         });
-        result += '<br>';
+        result += '</tr>';
     });
+
+    result += '</tbody></table>'
 
     output(result);
 }
