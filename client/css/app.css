@@ -1,0 +1,30 @@
+/* CSS declarations go here */
+
+h1 {
+  text-align: center;
+  color: #555;
+  border-bottom: 2px dashed #eee;
+}
+
+.output {
+  white-space: pre;
+  display: block;
+  unicode-bidi: embed;
+  font-family: Menlo;
+  font-size: 13px;
+}
+
+.output p {
+  margin-bottom: 10px;
+  border-bottom: 2px dashed #eee;
+  padding: 0 10px 10px 10px;
+}
+
+#graph {
+  width: 100%;
+  height: 600px;
+  border: 1px solid lightgray;
+}
+#threads {
+  width: 100%;
+}

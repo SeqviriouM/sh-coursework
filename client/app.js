@@ -7,18 +7,6 @@ Template.curse_work.helpers({
     }
 })
 
-// Template.curse_work.created = function () {
-//     this.state = new ReactiveDict
-// }
-
-
-function pretty(input) {
-    return JSON.stringify(input, null, '\t');
-}
-
-function pp(input) {
-    console.log(pretty(input));
-}
 
 function output(input, output) {
     if (output) {
@@ -28,19 +16,12 @@ function output(input, output) {
     }
 }
 
-function copy(input) {
-    return JSON.parse(JSON.stringify(input));
-}
-
 function printMatr(input, title) {
     var result = '<h3 class="title">' + title + '</h3><table class="table table-hover"><tbody><tr><td></td>',
         N = input.length;
 
     for (var i = 1; i <= N; i++) {
         result += '<td><span style="color:#999;display:inline-block;transform:rotate(-45deg);padding-bottom:4px">' + i + '</span></td>';
-        // if (i < 10) {
-        //     result += '  ';
-        // }
     }
 
     result += '</tr>'
@@ -52,15 +33,6 @@ function printMatr(input, title) {
         }
         row.forEach(function (el) {
             result += '<td>' + el + '</td>';
-            // if (el < 10) {
-            //     result += '         ';
-            // } 
-            // if (el.length == 2) {
-            //     result += '       ';
-            // }
-            // if (el.length == 3) {
-            //     result += '      ';
-            // }
         });
         result += '</tr>';
     });
@@ -68,112 +40,6 @@ function printMatr(input, title) {
     result += '</tbody></table>'
 
     output(result);
-}
-
-function logicSum(a,b) {
-    if (a == 0 || a == 1) {
-        return b;
-    }
-    if (b == 0 || b == 1) { 
-        return a;
-    }
-
-    return (a + b);
-}
-
-function logicMultiplication(a,b) {
-    if (a == 0 || b == 0) {
-        return 0;
-    }
-    if (a == 1) { 
-        return b;
-    }
-    if (b == 1) {
-        return a;
-    }
-
-    return (a + b);
-}
-
-
-function compute(tree) {
-
-    /*
-
-    Расчет матрицы следования
-
-    */
-
-    var N = Object.keys(tree).length;
-    
-    var matr = [];
-
-    for (var i = 1; i <= N; i++) {
-        var current = tree[i],
-            row = [],
-            conditionState = true;
-
-        for (var j = 0; j < N; j++) {
-            if (current[j + 1]) {
-                if (current.condition) {
-                    row[j] = conditionState ? (i + 'T') : (i + 'F');
-                    conditionState = false;
-                } else {
-                    row[j] = 1;
-                }
-            } else {
-                row[j] = 0;
-            }
-        }
-
-        matr.push(row);
-    }
-
-    matr = _.zip.apply(_, matr);
-
-    printMatr(matr, "Матрица следования: ");
-
-    matr = _.zip.apply(_, matr);
-    /*
-
-    Расчет матрицы следования с указанием весов
-
-    */
-
-    var values = [];
-    for (var i = 1; i <= N; i++) {
-        values.push(tree[i].value);
-    }
-    matr.push(values);
-    
-    // Траспонирование матрицы
-    matr = _.zip.apply(_, matr);
-    
-    printMatr(matr, "Матрица следования с указанием весов: ");
-
-    /* 
-
-    Расчет матрицы следования с указанием транзитивных связей
-    
-    */
-
-    // Извлечение последнего столбца(столбца с весами элементов)
-    matr = _.zip.apply(_, matr);
-    matr.pop();  
-    matr = _.zip.apply(_, matr);
-
-    for (var i = 0; i < N; i++) {
-        for (var j = 0; j < N; j++) {
-            if (matr[i][j] != 0) {
-                for (k = 0; k < j; k++) {
-                    matr[i][k] = logicSum(logicMultiplication(matr[j][k], matr[i][j]), matr[i][k]);
-                }
-            }
-        }
-    }
-
-    printMatr(matr, "Матрица следования с транзитивными связями: ");
-
 }
 
 function getAllPaths(tree) {
@@ -243,12 +109,6 @@ function getThreads(tree) {
             }
         }
     }
-
-    //output('Threads: ', '#threads');
-    
-        // for (var thread in threads) {
-        //     output(threads[thread].way, '#threads');
-        // }
 
     return threads;
 }
@@ -339,35 +199,15 @@ function drawGraph(tree) {
             padding: 10
         }
     });
-
-    //var network = new vis.Network(container, data, {});
 }
 
 function calculate(tree) {
-    /*
-    Draw graph
-    */
     drawGraph(tree);
 
-    /*
-    Get all paths
-    */
-    //getAllPaths(tree);
-    
-    /*
-    Get threads
-    */
-    var threads = getThreads(tree); 
+    var threads = getThreads(tree),
+        matr = []; 
 
     graph.set('threads', threads);
-
-    //Template.curse_work.__helpers.set('threads', threads);
-
-    /*
-    Расчет матрицы следования
-    */
-
-    var matr = [];
 
     Object.keys(tree).forEach(function(currentValue, index, arr) {
         var current = tree[currentValue],
@@ -384,10 +224,7 @@ function calculate(tree) {
     printMatr(matr, "Матрица следования: ");
 
     matr = _.zip.apply(_, matr);
-
-
 }
-
 
 
 $(function () {
@@ -631,8 +468,4 @@ $(function () {
     }
 
     calculate(tree);
-
-    //calculate(tree);
-    //compute(tree);
-
 });
