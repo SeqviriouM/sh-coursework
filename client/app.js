@@ -110,6 +110,8 @@ function getThreads(tree, matr) {
         }
     }
 
+    getTimes(threads, copied_tree, matr)
+
     return threads;
 }
 
@@ -120,7 +122,7 @@ function addThread(thread, tree, matr) {
         var change_vertices = matr[top-1].map(function (item, index) { return (item != 0) ? ++index : -1; });
         if (change_vertices.lenght !== 0) {
             change_vertices.forEach(function (item) {
-                if ( item != -1 && (item) != previous_top) {
+                if ( item != -1 && (item) != previous_top && !tree[item].deleted) {
                     tree[item].value += parseInt(tree[item].directions[top]);    
                 }
             })
@@ -173,8 +175,43 @@ function addThread(thread, tree, matr) {
     }
 }
 
-function getTimes(tree, threads, matr) {
-    
+function getTimes(threads, tree, matr) {
+    for (thread in threads) {
+        if (matr[threads[thread].way[0]-1].every(function (item) { return item === 0 })) {
+            threads[thread].begin = 0;
+            threads[thread].end = threads[thread].value;
+        } else {
+            var cur_top_weight = 0,
+                cur_top;
+            
+            threads[thread].begin = 0;
+
+            matr[threads[thread].way[0]-1].forEach(function (item, index) {
+                if (parseInt(item) > cur_top_weight) {
+                    cur_top = index;
+                    cur_top_weight = item;
+                }
+            });
+
+            while (cur_top !== false) {
+                threads[thread].begin += tree[cur_top + 1].value;
+                //cur_top = matr[cur_top-1].every(function (item) { return item === 0 }) ? 
+                if (matr[cur_top].every(function (item) { return item === 0 })) {
+                    cur_top = false;
+                } else {
+                    cur_top_weight = 0;
+                    cur_top = 0;
+
+                    matr[cur_top].forEach(function (item, index) {
+                        if (parseInt(item) > cur_top_weight) {
+                            cur_top = index;
+                            cur_top_weight = item;
+                        }
+                    });
+                }
+            }
+        }
+    }
 }
 
 function drawGraph(tree) {
@@ -269,8 +306,7 @@ $(function () {
             start: true,
             directions: {
                 7: '7&',
-                9: '3&',
-                1: '2'
+                9: '3&'
             }
         },
         3: {
