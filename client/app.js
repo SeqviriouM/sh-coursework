@@ -17,7 +17,7 @@ function output(input, output) {
 }
 
 function printMatr(input, title) {
-    var result = '<h3 class="title">' + title + '</h3><table class="table table-hover"><tbody><tr><td></td>',
+    var result = '<h3 class="title">' + title + '</h3><table class="table table-striped table-hover"><tbody><tr><td></td>',
         N = input.length;
 
     for (var i = 1; i <= N; i++) {
@@ -92,7 +92,7 @@ function addPath(paths, tree) {
     }
 }
 
-function getThreads(tree) {
+function getThreads(tree, matr) {
     var copied_tree = $.extend(true, {}, tree),
         threads = [],
         end = false;
@@ -103,7 +103,7 @@ function getThreads(tree) {
             if (!copied_tree[item].deleted) {
                 end = false;
                 var help_thread = {top: item, way: new Array(item), value: copied_tree[item].value};
-                help_thread = addThread(help_thread, copied_tree);
+                help_thread = addThread(help_thread, copied_tree, matr);
                 threads.push(help_thread);
                 break;
             }
@@ -113,8 +113,21 @@ function getThreads(tree) {
     return threads;
 }
 
-function addThread(thread, tree) {
-     if (Object.keys(tree[thread.top].directions).length !== 0) {
+function addThread(thread, tree, matr) {
+    var previous_top = thread.top;
+
+    var checkConnections = function (top, prev_top, tree, matr) {
+        var change_vertices = matr[top-1].map(function (item, index) { return (item != 0) ? ++index : -1; });
+        if (change_vertices.lenght !== 0) {
+            change_vertices.forEach(function (item) {
+                if ( item != -1 && (item) != previous_top) {
+                    tree[item].value += parseInt(tree[item].directions[top]);    
+                }
+            })
+        }
+    }
+
+    if (Object.keys(tree[thread.top].directions).length !== 0) {
         if (Object.keys(tree[thread.top].directions).length > 1) {
             var max_dir_value = 0,
                 max_dir;
@@ -126,12 +139,13 @@ function addThread(thread, tree) {
             }
             if (max_dir) {
                 for (var dir in tree[thread.top].directions) {
-                    if (dir !== parseInt(max_dir)) {
+                    if (dir !== max_dir) {
                         tree[dir].value += parseInt(tree[thread.top].directions[dir]);
                     }
                 }
                 tree[thread.top].deleted = true;
                 thread.way.push(max_dir);
+                thread.value += tree[max_dir].value;
                 thread.top = max_dir;    
             } else {
                 tree[thread.top].deleted = true;
@@ -142,18 +156,25 @@ function addThread(thread, tree) {
             if (!tree[Object.keys(tree[thread.top].directions)[0]].deleted) {
                 tree[thread.top].deleted = true;
                 thread.way.push(Object.keys(tree[thread.top].directions)[0]);
+                thread.value += tree[Object.keys(tree[thread.top].directions)[0]].value;
                 thread.top = Object.keys(tree[thread.top].directions)[0];
             } else {
                 tree[thread.top].deleted = true;
                 return thread;
             }   
         }
-        return addThread(thread, tree);
 
-     } else {
+        checkConnections(thread.top, previous_top, tree, matr);
+        return addThread(thread, tree, matr);
+
+    } else {
         tree[thread.top].deleted = true;
         return thread;
-     }
+    }
+}
+
+function getTimes(tree, threads, matr) {
+    
 }
 
 function drawGraph(tree) {
@@ -202,12 +223,10 @@ function drawGraph(tree) {
 }
 
 function calculate(tree) {
+    var threads,
+        matr = [];
+
     drawGraph(tree);
-
-    var threads = getThreads(tree),
-        matr = []; 
-
-    graph.set('threads', threads);
 
     Object.keys(tree).forEach(function(currentValue, index, arr) {
         var current = tree[currentValue],
@@ -220,10 +239,15 @@ function calculate(tree) {
     });
 
     matr = _.zip.apply(_, matr);
+    threads = getThreads(tree, matr),
+    
+    graph.set('threads', threads);
 
     printMatr(matr, "Матрица следования: ");
-
     matr = _.zip.apply(_, matr);
+
+
+    
 }
 
 
