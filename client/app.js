@@ -1,9 +1,13 @@
 graph = new ReactiveDict;
 graph.set('threads', []);
+graph.set('packing_threads', []);
 
 Template.curse_work.helpers({
     threads: function () {
         return graph.get('threads');
+    },
+    packing_threads : function () {
+        return graph.get('packing_threads');
     }
 })
 
@@ -102,7 +106,7 @@ function getThreads(tree, matr) {
         for (var item in copied_tree) {
             if (!copied_tree[item].deleted) {
                 end = false;
-                var help_thread = {top: item, way: new Array(item), value: copied_tree[item].value};
+                var help_thread = {top: item, way: new Array(item), value: copied_tree[item].value, index: threads.length};
                 help_thread = addThread(help_thread, copied_tree, matr);
                 threads.push(help_thread);
                 break;
@@ -182,36 +186,112 @@ function getTimes(threads, tree, matr) {
             threads[thread].end = threads[thread].value;
         } else {
             var cur_top_weight = 0,
-                cur_top;
+                cur_top_index;
             
             threads[thread].begin = 0;
 
             matr[threads[thread].way[0]-1].forEach(function (item, index) {
                 if (parseInt(item) > cur_top_weight) {
-                    cur_top = index;
+                    cur_top_index = index;
                     cur_top_weight = item;
                 }
             });
 
-            while (cur_top !== false) {
-                threads[thread].begin += tree[cur_top + 1].value;
-                //cur_top = matr[cur_top-1].every(function (item) { return item === 0 }) ? 
-                if (matr[cur_top].every(function (item) { return item === 0 })) {
-                    cur_top = false;
+            while (cur_top_index !== false) {
+                threads[thread].begin += tree[cur_top_index + 1].value;
+                if (matr[cur_top_index].every(function (item) { return item === 0 })) {
+                    cur_top_index = false;
                 } else {
                     cur_top_weight = 0;
-                    cur_top = 0;
+                    cur_top_index = 0;
 
-                    matr[cur_top].forEach(function (item, index) {
+                    matr[cur_top_index].forEach(function (item, index) {
                         if (parseInt(item) > cur_top_weight) {
-                            cur_top = index;
+                            cur_top_index = index;
                             cur_top_weight = item;
                         }
                     });
                 }
             }
+            threads[thread].end = threads[thread].begin + threads[thread].value
         }
     }
+}
+
+function connectionThreads(threads, tree, matr) {
+    for (thread in threads) {
+        threads[thread].way.forEach(function (item, index) {
+
+        })
+    }
+}
+
+function packingThreads(threads) {
+    var times = [],
+        packing_threads = [];
+
+    threads.forEach(function (item, index) {
+        times.push({ thread: item.index, begin: item.begin, end: item.end });
+    });
+
+    times.sort(function (a, b) {
+        return a.begin - b.begin; 
+    });
+
+    times.forEach(function (item) {
+        var flag = false;
+        packing_threads.forEach(function (t) {
+            if (item.begin >= t[t.length-1].end) {
+                t.push(item);
+                flag = true;
+            }
+        });
+        if (!flag) {
+            packing_threads.push(new Array(item));
+        }
+    })
+
+    return packing_threads;
+}
+
+function processorsConnection(packing_threads, threads, tree) {
+    var connections = [],
+        processors = [];
+
+    packing_threads.forEach(function (item) {
+        var tops = [];
+        item.forEach(function (t) {
+            tops = tops.concat(threads[t.thread].way);
+        })
+        connections.push(tops);
+    });
+
+    connections.forEach(function (item) {
+        var proc_connects = [];
+        item.forEach(function (t) {
+            for (i in tree[t].directions) {                
+                connections.forEach(function (el, index) {
+                    if (el.indexOf(i) !== -1) {
+                        proc_connects.push(index); 
+                    }
+                });
+            }
+        })
+        processors.push(proc_connects);
+    });
+
+    for (var i in processors) {
+        processors[i] = processors[i].filter(function (el) {
+            return el != i;
+        });
+        for (var j in processors[i]) {
+            if (processors[processors[i][j]].indexOf(parseInt(i)) === -1) {
+                processors[processors[i][j]].push(parseInt(i));
+            }
+        }
+    }
+
+    debugger;
 }
 
 function drawGraph(tree) {
@@ -261,6 +341,7 @@ function drawGraph(tree) {
 
 function calculate(tree) {
     var threads,
+        packing_threads,
         matr = [];
 
     drawGraph(tree);
@@ -276,14 +357,17 @@ function calculate(tree) {
     });
 
     matr = _.zip.apply(_, matr);
-    threads = getThreads(tree, matr),
-    
+    threads = getThreads(tree, matr);    
     graph.set('threads', threads);
 
     printMatr(matr, "Матрица следования: ");
     matr = _.zip.apply(_, matr);
 
 
+    packing_threads = packingThreads(threads);
+    graph.set('packing_threads', packing_threads);
+
+    processorsConnection(packing_threads, threads, tree);
     
 }
 

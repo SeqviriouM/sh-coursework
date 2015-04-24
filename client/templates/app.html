@@ -22,6 +22,7 @@
         <table class="table table-bordered table-hover">
           <thead>
             <tr>
+              <td>Index</td>
               <td>Thread</td>
               <td>Weight</td>
               <td>Begin</td>
@@ -31,6 +32,9 @@
           <tbody>
             {{#each threads}}
               <tr>
+                <td>
+                  {{index}}
+                </td>
                 <td>
                   {{way}}
                 </td>
@@ -48,6 +52,39 @@
           </tbody>
         </table>
       </div>
+      <div id="packing_threads" class="threads">
+        <h3>Компановка нитей: </h3>
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <td>Thread</td>
+              <td>Begin</td>
+              <td>End</td>
+              <td>Thread</td>
+              <td>Begin</td>
+              <td>End</td>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each packing_threads}}
+              <tr>
+                {{#each this}}
+                  <td>
+                    {{thread}}
+                  </td>
+                  <td>
+                    {{begin}}
+                  </td>
+                  <td>
+                    {{end}}
+                  </td>
+                {{/each}}
+              </tr>
+            {{/each}}  
+          </tbody>
+        </table>
+      </div>
+
     </div>
   </div>
   <div class="output">
