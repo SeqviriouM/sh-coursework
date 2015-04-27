@@ -241,7 +241,7 @@ function packingThreads(threads) {
     times.forEach(function (item) {
         var flag = false;
         packing_threads.forEach(function (t) {
-            if (item.begin >= t[t.length-1].end) {
+            if (item.begin >= t[t.length-1].end && !flag) {
                 t.push(item);
                 flag = true;
             }
@@ -291,7 +291,7 @@ function processorsConnection(packing_threads, threads, tree) {
         }
     }
 
-    debugger;
+    return processors;
 }
 
 function drawGraph(tree) {
@@ -339,10 +339,56 @@ function drawGraph(tree) {
     });
 }
 
+function drawProcessors(processors) {
+    var nodes = [],
+        edges = [];
+
+    for (var i in processors) {
+        nodes.push( { data: { id: 'p' + i } } );
+        for (var j in processors[i]) {
+            if (edges.every(function (item) {
+                return (item.data.source != 'p' + processors[i][j] || item.data.target != 'p' + i); })) {
+                edges.push( { data: { id: i+j, source: 'p' + i, target: 'p' + processors[i][j] } } );    
+            }
+        }
+    }
+
+    var elements = {nodes: nodes, edges: edges};
+
+    var cy = cytoscape({
+        container: document.getElementById('processors-graph'),
+        style: cytoscape.stylesheet()
+        .selector('node')
+          .css({
+            'content': 'data(id)'
+          })
+        .selector('edge')
+          .css({
+            'width': 4,
+            'line-color': '#ddd'
+          })
+        .selector('.highlighted')
+          .css({
+            'background-color': '#61bffc',
+            'line-color': '#61bffc',
+            'target-arrow-color': '#61bffc',
+            'transition-property': 'background-color, line-color, target-arrow-color',
+            'transition-duration': '0.5s'
+          }),
+        elements: elements,
+        layout: {
+            name: 'breadthfirst',
+            directed: true,
+            padding: 10
+        }
+    });
+}
+
 function calculate(tree) {
     var threads,
         packing_threads,
-        matr = [];
+        matr = [],
+        processors = [];
 
     drawGraph(tree);
 
@@ -367,7 +413,9 @@ function calculate(tree) {
     packing_threads = packingThreads(threads);
     graph.set('packing_threads', packing_threads);
 
-    processorsConnection(packing_threads, threads, tree);
+    processors = processorsConnection(packing_threads, threads, tree);
+
+    drawProcessors(processors);
     
 }
 
