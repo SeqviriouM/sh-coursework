@@ -124,7 +124,7 @@ function addThread(thread, tree, matr) {
 
     var checkConnections = function (top, prev_top, tree, matr) {
         var change_vertices = matr[top-1].map(function (item, index) { return (item != 0) ? ++index : -1; });
-        if (change_vertices.lenght !== 0) {
+        if (change_vertices.length !== 0) {
             change_vertices.forEach(function (item) {
                 if ( item != -1 && (item) != previous_top && !tree[item].deleted) {
                     tree[item].value += parseInt(tree[item].directions[top]);    
@@ -203,7 +203,6 @@ function getTimes(threads, tree, matr) {
                     cur_top_index = false;
                 } else {
                     cur_top_weight = 0;
-                    cur_top_index = 0;
 
                     matr[cur_top_index].forEach(function (item, index) {
                         if (parseInt(item) > cur_top_weight) {
@@ -215,14 +214,6 @@ function getTimes(threads, tree, matr) {
             }
             threads[thread].end = threads[thread].begin + threads[thread].value
         }
-    }
-}
-
-function connectionThreads(threads, tree, matr) {
-    for (thread in threads) {
-        threads[thread].way.forEach(function (item, index) {
-
-        })
     }
 }
 
@@ -271,7 +262,7 @@ function processorsConnection(packing_threads, threads, tree) {
         item.forEach(function (t) {
             for (i in tree[t].directions) {                
                 connections.forEach(function (el, index) {
-                    if (el.indexOf(i) !== -1) {
+                    if (el.indexOf(i) !== -1 && proc_connects.indexOf(index) === -1) {
                         proc_connects.push(index); 
                     }
                 });
@@ -292,6 +283,9 @@ function processorsConnection(packing_threads, threads, tree) {
     }
 
     return processors;
+}
+
+function processorsDistribution(processors) {
 }
 
 function drawGraph(tree) {
